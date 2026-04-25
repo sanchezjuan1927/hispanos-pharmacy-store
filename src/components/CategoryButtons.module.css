@@ -1,0 +1,97 @@
+.container {
+  padding: 16px 16px 20px;
+}
+
+/* ── Todos chip ── */
+.todosBtn {
+  display: block;
+  width: 100%;
+  padding: 11px 20px;
+  margin-bottom: 12px;
+  border-radius: 10px;
+  border: 2px solid #d4d4d4;
+  background: white;
+  color: #444;
+  font-size: 0.95rem;
+  font-weight: 700;
+  cursor: pointer;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  transition: all 0.2s ease;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+}
+
+.todosBtn:hover {
+  border-color: #46bb90;
+  color: #103357;
+}
+
+.todosActive {
+  background: #103357;
+  border-color: #103357;
+  color: white;
+  box-shadow: 0 3px 10px rgba(16, 51, 87, 0.25);
+}
+
+/* ── Row of auto-sized rectangles, centered ── */
+.grid {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+}
+
+/* ── Individual category tile ── */
+.card {
+  background: white;
+  border-radius: 10px;
+  border: 2px solid transparent;
+  cursor: pointer;
+  padding: 10px 22px;
+  text-align: center;
+  transition: all 0.2s ease;
+  box-shadow: 0 1px 5px rgba(0, 0, 0, 0.07);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 72px;
+}
+
+.card:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  border-color: #46bb90;
+}
+
+.card:active {
+  transform: translateY(0);
+}
+
+.cardActive {
+  background: #103357;
+  border-color: #103357;
+  box-shadow: 0 3px 10px rgba(16, 51, 87, 0.25);
+}
+
+.imageWrap {
+  display: none;
+}
+
+.cardImage {
+  display: none;
+}
+
+.cardLabel {
+  display: block;
+  font-size: 0.8rem;
+  font-weight: 800;
+  color: #103357;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  padding: 0;
+  border-top: none;
+}
+
+.cardActive .cardLabel {
+  color: white;
+}

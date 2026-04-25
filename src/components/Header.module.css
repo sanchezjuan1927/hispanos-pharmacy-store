@@ -1,0 +1,125 @@
+.header {
+  background: linear-gradient(135deg, #103357 0%, #1a4f82 100%);
+  color: white;
+  padding: 16px 16px 0;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.2);
+}
+
+/* ── Top row: logo + info left, lang button right ── */
+.topRow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  padding: 0 0 16px;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.logoImg {
+  height: 52px;
+  width: auto;
+  display: block;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.25));
+}
+
+.storeInfo {
+  position: absolute;
+  left: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.infoLine {
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.85);
+  font-weight: 500;
+  letter-spacing: 0.2px;
+  white-space: nowrap;
+}
+
+.langBtn {
+  position: absolute;
+  right: 0;
+  background: rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  color: white;
+  padding: 7px 14px;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.langBtn:hover {
+  background: rgba(255, 255, 255, 0.28);
+}
+
+/* ── Search area — attached to bottom of header ── */
+.searchArea {
+  background: rgba(255, 255, 255, 0.08);
+  margin: 0 -16px;
+  padding: 10px 16px 14px;
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+/* ── Floating cart button ── */
+.cartBtn {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  background: linear-gradient(135deg, #46bb90, #2d9e74);
+  border: none;
+  color: white;
+  width: 66px;
+  height: 66px;
+  border-radius: 50%;
+  font-size: 1.7rem;
+  cursor: pointer;
+  box-shadow: 0 4px 20px rgba(70, 187, 144, 0.45);
+  z-index: 90;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.cartBtn:hover {
+  transform: scale(1.1);
+  box-shadow: 0 6px 28px rgba(70, 187, 144, 0.55);
+}
+
+.cartBtn:active {
+  transform: scale(0.95);
+}
+
+.cartIcon {
+  font-size: 1.7rem;
+}
+
+.cartBadge {
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  background: #f8c954;
+  color: #103357;
+  font-size: 0.8rem;
+  font-weight: 800;
+  min-width: 22px;
+  height: 22px;
+  border-radius: 11px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 6px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+}

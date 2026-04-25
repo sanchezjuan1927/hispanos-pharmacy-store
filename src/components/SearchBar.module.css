@@ -1,0 +1,55 @@
+.container {
+  display: flex;
+  align-items: center;
+  background: white;
+  border: none;
+  border-radius: 12px;
+  padding: 4px 14px;
+  transition: box-shadow 0.2s ease;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.18);
+}
+
+.container:focus-within {
+  box-shadow: 0 0 0 3px rgba(70, 187, 144, 0.5), 0 2px 12px rgba(0, 0, 0, 0.18);
+}
+
+.icon {
+  font-size: 1.2rem;
+  margin-right: 10px;
+  opacity: 0.5;
+}
+
+.input {
+  flex: 1;
+  border: none;
+  outline: none;
+  font-size: 1.05rem;
+  padding: 11px 0;
+  background: transparent;
+  color: #1a1a1a;
+  font-family: inherit;
+}
+
+.input::placeholder {
+  color: #aaa;
+}
+
+.clear {
+  background: #e8e8e8;
+  border: none;
+  color: #666;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  font-size: 0.85rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s ease;
+}
+
+.clear:hover {
+  background: #ccc;
+  color: #333;
+}
