@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useStore } from '../context/StoreContext';
 import styles from './Checkout.module.css';
 
-const WHATSAPP_NUMBER = '19294856992';
+const WHATSAPP_NUMBER = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || '14155238886';
 
 export default function Checkout() {
   const { t, lang, cart, cartTotal, checkoutOpen, setCheckoutOpen, clearCart } =
