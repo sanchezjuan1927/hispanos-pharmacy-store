@@ -2,9 +2,11 @@
 
 import { useState } from 'react';
 import { useStore } from '../context/StoreContext';
+import { supabase } from '../lib/supabase';
 import styles from './Checkout.module.css';
 
 const WHATSAPP_NUMBER = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || '14155238886';
+const TABLE = 'Hisp Pharmacy Order taker';
 
 export default function Checkout() {
   const { t, lang, cart, cartTotal, checkoutOpen, setCheckoutOpen, clearCart } =
@@ -37,11 +39,28 @@ export default function Checkout() {
     return encodeURIComponent(message);
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+
+    // Save order to Supabase
+    await supabase.from(TABLE).insert({
+      full_name: name.trim(),
+      phone: phone.trim(),
+      address: address.trim(),
+      items: cart.map((item) => ({
+        name: lang === 'es' ? item.name_es : item.name_en,
+        qty: item.qty,
+        price: item.price,
+      })),
+      total: cartTotal,
+      status: 'pending',
+    });
+
+    // Open WhatsApp with pre-filled order message
     const message = buildWhatsAppMessage();
     const url = `https://wa.me/${WHATSAPP_NUMBER}?text=${message}`;
     window.open(url, '_blank');
+
     clearCart();
     setCheckoutOpen(false);
     setName('');
