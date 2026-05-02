@@ -5,7 +5,7 @@ import { useStore } from '../context/StoreContext';
 import { supabase } from '../lib/supabase';
 import styles from './Checkout.module.css';
 
-const WHATSAPP_NUMBER = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || '14155238886';
+const WHATSAPP_NUMBER = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || '19296067118';
 const TABLE = 'Hisp Pharmacy Order taker';
 
 export default function Checkout() {
