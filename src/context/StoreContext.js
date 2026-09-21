@@ -1,9 +1,11 @@
 'use client';
 
-import { createContext, useContext, useState, useCallback } from 'react';
+import { createContext, useContext, useState, useCallback, useEffect } from 'react';
 import { translations } from '../lib/translations';
 
 const StoreContext = createContext(null);
+
+const CART_KEY = 'hp-cart';
 
 export function StoreProvider({ children }) {
   const [lang, setLang] = useState('es');
@@ -12,6 +14,34 @@ export function StoreProvider({ children }) {
   const [checkoutOpen, setCheckoutOpen] = useState(false);
 
   const t = translations[lang];
+
+  // Restore the cart after a reload — an accidental back or refresh
+  // shouldn't cost someone their whole order. Read after mount so the
+  // server and first client render still match.
+  useEffect(() => {
+    try {
+      const saved = window.localStorage.getItem(CART_KEY);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed)) setCart(parsed);
+      }
+    } catch {
+      // Private mode or blocked storage — start with an empty cart.
+    }
+  }, []);
+
+  useEffect(() => {
+    try {
+      window.localStorage.setItem(CART_KEY, JSON.stringify(cart));
+    } catch {
+      // Not being able to persist must never break checkout.
+    }
+  }, [cart]);
+
+  // Keep the document language in step with the toggle, for screen readers.
+  useEffect(() => {
+    document.documentElement.lang = lang;
+  }, [lang]);
 
   const toggleLang = useCallback(() => {
     setLang((prev) => (prev === 'es' ? 'en' : 'es'));

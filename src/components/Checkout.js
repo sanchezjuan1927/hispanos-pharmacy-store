@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useStore } from '../context/StoreContext';
-import { supabase } from '../lib/supabase';
+import { getSupabase } from '../lib/supabase';
 import styles from './Checkout.module.css';
 
 const WHATSAPP_NUMBER = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || '19296067118';
@@ -15,6 +15,7 @@ export default function Checkout() {
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
   const [address, setAddress] = useState('');
+  const [submitting, setSubmitting] = useState(false);
 
   if (!checkoutOpen) return null;
 
@@ -43,29 +44,45 @@ export default function Checkout() {
     e.preventDefault();
 
     // Save order to Supabase
-    await supabase.from(TABLE).insert({
-      full_name: name.trim(),
-      phone: phone.trim(),
-      address: address.trim(),
-      items: cart.map((item) => ({
-        name: lang === 'es' ? item.name_es : item.name_en,
-        qty: item.qty,
-        price: item.price,
-      })),
-      total: cartTotal,
-      status: 'pending',
-    });
+    if (submitting) return;
+    setSubmitting(true);
 
-    // Open WhatsApp with pre-filled order message
-    const message = buildWhatsAppMessage();
-    const url = `https://wa.me/${WHATSAPP_NUMBER}?text=${message}`;
-    window.open(url, '_blank');
+    const url = `https://wa.me/${WHATSAPP_NUMBER}?text=${buildWhatsAppMessage()}`;
+
+    // Log the order, but never let a slow or unconfigured database hold up the
+    // WhatsApp handoff — that handoff is how the pharmacy actually gets the order.
+    try {
+      const supabase = getSupabase();
+      if (supabase) {
+        await Promise.race([
+          supabase.from(TABLE).insert({
+            full_name: name.trim(),
+            phone: phone.trim(),
+            address: address.trim(),
+            items: cart.map((item) => ({
+              name: lang === 'es' ? item.name_es : item.name_en,
+              qty: item.qty,
+              price: item.price,
+            })),
+            total: cartTotal,
+            status: 'pending',
+          }),
+          new Promise((resolve) => setTimeout(resolve, 4000)),
+        ]);
+      }
+    } catch {
+      // Order still reaches the pharmacy over WhatsApp.
+    }
 
     clearCart();
     setCheckoutOpen(false);
     setName('');
     setPhone('');
     setAddress('');
+
+    // A same-tab navigation, not window.open: mobile Safari blocks popups
+    // opened after an await, which would silently drop the order.
+    window.location.href = url;
   };
 
   const isValid = name.trim() && phone.trim() && address.trim() && cart.length > 0;

@@ -8,7 +8,12 @@ export default function SearchBar({ value, onChange }) {
 
   return (
     <div className={styles.container}>
-      <span className={styles.icon}>🔍</span>
+      <span className={styles.icon} aria-hidden="true">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round">
+          <circle cx="11" cy="11" r="7" />
+          <path d="m20 20-3.5-3.5" />
+        </svg>
+      </span>
       <input
         type="text"
         className={styles.input}

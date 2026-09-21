@@ -1,57 +1,72 @@
 'use client';
 
-import { useState } from 'react';
+import Image from 'next/image';
 import { useStore } from '../context/StoreContext';
 import styles from './ProductCard.module.css';
 
-const CATEGORY_BG = {
-  farmacia: '#f0f8f4',
-  comida: '#fdf8f0',
-  limpieza: '#f4f0fa',
-  utilidades: '#f0f4fa',
-};
-
-export default function ProductCard({ product }) {
-  const { t, lang, addToCart } = useStore();
-  const [added, setAdded] = useState(false);
-  const [imgError, setImgError] = useState(false);
+export default function ProductCard({ product, onOpen, priority = false }) {
+  const { t, lang, cart, addToCart, updateQty } = useStore();
 
   const name = lang === 'es' ? product.name_es : product.name_en;
-  const bg = CATEGORY_BG[product.category] || '#f8f4f0';
+  const qty = cart.find((item) => item.id === product.id)?.qty ?? 0;
 
-  const handleAdd = () => {
-    addToCart(product);
-    setAdded(true);
-    setTimeout(() => setAdded(false), 1200);
-  };
+  const [dollars, cents] = product.price.toFixed(2).split('.');
 
   return (
-    <div className={styles.card}>
-      <div className={styles.imageWrap} style={{ background: bg }}>
-        {!imgError ? (
-          <img
-            src={product.image}
-            alt={name}
-            className={styles.productImg}
-            onError={() => setImgError(true)}
-          />
-        ) : (
-          <div className={styles.imgFallback} style={{ background: bg }}>
-            <span className={styles.fallbackInitial}>{name[0]}</span>
-          </div>
-        )}
-      </div>
-      <div className={styles.info}>
-        <h3 className={styles.name}>{name}</h3>
-        <p className={styles.price}>${product.price.toFixed(2)}</p>
-      </div>
+    <article className={styles.card}>
       <button
-        className={`${styles.addBtn} ${added ? styles.addedBtn : ''}`}
-        onClick={handleAdd}
-        disabled={added}
+        className={styles.preview}
+        onClick={() => onOpen(product)}
+        aria-label={name}
       >
-        {added ? `✓ ${t.added}` : `+ ${t.addToCart}`}
+        <span className={styles.imageWrap}>
+          <Image
+            src={product.image}
+            alt=""
+            fill
+            sizes="(min-width: 900px) 220px, (min-width: 600px) 30vw, 45vw"
+            className={styles.image}
+            priority={priority}
+          />
+        </span>
+        <span className={styles.name}>{name}</span>
       </button>
-    </div>
+
+      <p className={styles.price}>
+        <span className={styles.currency}>$</span>
+        <span className={styles.dollars}>{dollars}</span>
+        <span className={styles.cents}>{cents}</span>
+      </p>
+
+      {qty === 0 ? (
+        <button className={styles.addBtn} onClick={() => addToCart(product)}>
+          {t.addToCart}
+        </button>
+      ) : (
+        <div className={styles.stepper}>
+          <button
+            className={styles.stepBtn}
+            onClick={() => updateQty(product.id, qty - 1)}
+            aria-label={t.decrease}
+          >
+            {qty === 1 ? (
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                <path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6" />
+              </svg>
+            ) : (
+              '−'
+            )}
+          </button>
+          <span className={styles.qty} aria-live="polite">{qty}</span>
+          <button
+            className={styles.stepBtn}
+            onClick={() => updateQty(product.id, qty + 1)}
+            aria-label={t.increase}
+          >
+            +
+          </button>
+        </div>
+      )}
+    </article>
   );
 }

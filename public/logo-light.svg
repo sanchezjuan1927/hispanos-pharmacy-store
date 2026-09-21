@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 268 64" width="268" height="64" role="img" aria-label="Hispanos Pharmacy">
+  <!-- Pharmacy cross symbol -->
+  <rect x="6" y="12" width="10" height="40" rx="3" fill="#46bb90"/>
+  <rect x="0" y="22" width="22" height="20" rx="3" fill="#46bb90"/>
+  <!-- "Hispanos" — white so it reads on the navy header -->
+  <text x="32" y="33" font-family="Inter, Arial Black, Arial, sans-serif" font-weight="800" font-size="22" fill="#ffffff" letter-spacing="-0.4">Hispanos</text>
+  <!-- "Pharmacy" in brand green -->
+  <text x="33" y="52" font-family="Inter, Arial, sans-serif" font-weight="600" font-size="14" fill="#7fd9b4" letter-spacing="2.6">PHARMACY</text>
+</svg>

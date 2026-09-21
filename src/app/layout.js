@@ -16,9 +16,9 @@ export const metadata = {
 export const viewport = {
   width: 'device-width',
   initialScale: 1,
-  maximumScale: 1,
-  userScalable: false,
-  themeColor: '#2d6a4f',
+  // Zoom stays enabled on purpose: many customers here are older and
+  // pinch to read. Locking the scale would work against them.
+  themeColor: '#103357',
 };
 
 export default function RootLayout({ children }) {

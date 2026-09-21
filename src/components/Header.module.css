@@ -1,125 +1,174 @@
 .header {
-  background: linear-gradient(135deg, #103357 0%, #1a4f82 100%);
-  color: white;
-  padding: 16px 16px 0;
   position: sticky;
   top: 0;
   z-index: 100;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.2);
+  background: var(--navy);
+  color: #fff;
+  box-shadow: var(--shadow-md);
 }
 
-/* ── Top row: logo + info left, lang button right ── */
-.topRow {
+/* ── Row 1: logo + actions ── */
+/* Mobile: logo + actions on line 1, search wraps to line 2.
+   Desktop (see media query): all three sit on one line. */
+.mainRow {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  justify-content: center;
-  position: relative;
-  padding: 0 0 16px;
+  gap: 10px 12px;
+  padding: 10px 16px;
 }
 
-.brand {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.logoImg {
-  height: 52px;
+.logo {
+  height: 42px;
   width: auto;
   display: block;
-  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.25));
+  flex-shrink: 0;
 }
 
-.storeInfo {
-  position: absolute;
-  left: 0;
+.actions {
   display: flex;
-  flex-direction: column;
-  gap: 3px;
+  align-items: center;
+  gap: 8px;
+  margin-left: auto;
+  order: 2;
 }
 
-.infoLine {
-  font-size: 0.75rem;
-  color: rgba(255, 255, 255, 0.85);
-  font-weight: 500;
-  letter-spacing: 0.2px;
-  white-space: nowrap;
+/* Full-width second line on mobile */
+.searchRow {
+  order: 3;
+  flex: 1 1 100%;
 }
 
 .langBtn {
-  position: absolute;
-  right: 0;
-  background: rgba(255, 255, 255, 0.15);
-  border: 1px solid rgba(255, 255, 255, 0.35);
-  color: white;
-  padding: 7px 14px;
-  border-radius: 20px;
-  font-size: 0.85rem;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  color: #fff;
+  padding: 8px 14px;
+  border-radius: 999px;
+  font-size: 0.9rem;
   font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s ease;
+  min-height: 42px;
+  transition: background 0.15s ease;
 }
 
 .langBtn:hover {
-  background: rgba(255, 255, 255, 0.28);
+  background: rgba(255, 255, 255, 0.24);
 }
 
-/* ── Search area — attached to bottom of header ── */
-.searchArea {
-  background: rgba(255, 255, 255, 0.08);
-  margin: 0 -16px;
-  padding: 10px 16px 14px;
-  border-top: 1px solid rgba(255, 255, 255, 0.12);
+.langLabel {
+  white-space: nowrap;
 }
 
-/* ── Floating cart button ── */
 .cartBtn {
-  position: fixed;
-  bottom: 24px;
-  right: 24px;
-  background: linear-gradient(135deg, #46bb90, #2d9e74);
-  border: none;
-  color: white;
-  width: 66px;
-  height: 66px;
-  border-radius: 50%;
-  font-size: 1.7rem;
-  cursor: pointer;
-  box-shadow: 0 4px 20px rgba(70, 187, 144, 0.45);
-  z-index: 90;
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  width: 48px;
+  height: 48px;
+  min-height: 48px;
+  border: none;
+  border-radius: var(--r-md);
+  background: transparent;
+  color: #fff;
+  transition: background 0.15s ease;
 }
 
 .cartBtn:hover {
-  transform: scale(1.1);
-  box-shadow: 0 6px 28px rgba(70, 187, 144, 0.55);
-}
-
-.cartBtn:active {
-  transform: scale(0.95);
-}
-
-.cartIcon {
-  font-size: 1.7rem;
+  background: rgba(255, 255, 255, 0.14);
 }
 
 .cartBadge {
   position: absolute;
-  top: -2px;
-  right: -2px;
-  background: #f8c954;
-  color: #103357;
-  font-size: 0.8rem;
-  font-weight: 800;
+  top: 2px;
+  right: 0;
   min-width: 22px;
   height: 22px;
-  border-radius: 11px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
   padding: 0 6px;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+  border-radius: 11px;
+  background: var(--gold);
+  color: var(--navy);
+  font-size: 0.78rem;
+  font-weight: 800;
+  line-height: 22px;
+  text-align: center;
+}
+
+/* ── Categories ── */
+.categoryNav {
+  background: var(--navy-light);
+}
+
+.categoryList {
+  display: flex;
+  gap: 6px;
+  padding: 7px 16px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.categoryList::-webkit-scrollbar {
+  display: none;
+}
+
+.categoryPill {
+  min-height: 38px;
+  padding: 7px 16px;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 0.95rem;
+  font-weight: 600;
+  white-space: nowrap;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.categoryPill:hover {
+  background: rgba(255, 255, 255, 0.16);
+  color: #fff;
+}
+
+.categoryActive {
+  background: #fff;
+  color: var(--navy);
+  font-weight: 700;
+}
+
+.categoryActive:hover {
+  background: #fff;
+  color: var(--navy);
+}
+
+@media (min-width: 720px) {
+  .mainRow {
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 12px 24px 10px;
+    gap: 24px;
+  }
+
+  .logo {
+    height: 48px;
+  }
+
+  /* Search sits between logo and actions, Amazon-style */
+  .searchRow {
+    order: 2;
+    flex: 1 1 auto;
+    max-width: 620px;
+  }
+
+  .actions {
+    order: 3;
+  }
+
+  .categoryList {
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 8px 24px;
+  }
 }

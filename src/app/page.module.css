@@ -1,0 +1,38 @@
+.main {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 16px 16px 120px;
+}
+
+.sectionHead {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.heading {
+  margin: 0;
+  font-size: 1.35rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--ink);
+}
+
+.count {
+  flex-shrink: 0;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--ink-soft);
+}
+
+@media (min-width: 720px) {
+  .main {
+    padding: 22px 24px 120px;
+  }
+
+  .heading {
+    font-size: 1.6rem;
+  }
+}
