@@ -8,7 +8,7 @@ flow. Runs and builds clean. Not yet deployed.
 
 | # | Task | Status | Blocker |
 |---|------|--------|---------|
-| 1 | Supply `NEXT_PUBLIC_SUPABASE_ANON_KEY` so orders are logged | pending | key from Supabase dashboard |
+| 1 | Keep Supabase project awake (free tier pauses after ~1 week idle) — upgrade to Pro or add a keep-alive | pending | client decision |
 | 2 | Deploy to Vercel and capture the live URL | pending | task 1 (optional), client approval |
 | 3 | Connect phone AI: Sofia sends store link to delivery callers | pending | store URL |
 | 4 | End-to-end test from a real phone: browse → cart → WhatsApp | pending | task 2 |
@@ -21,6 +21,7 @@ flow. Runs and builds clean. Not yet deployed.
 - [x] Store build prompt written
 - [x] Storefront v1 (28 products, 4 categories, WhatsApp checkout)
 - [x] Interface redesign — see below
+- [x] Supabase project restored (2026-09-21); `.env.local` set; order insert verified end-to-end
 
 ## Interface redesign (this pass)
 
