@@ -7,13 +7,13 @@
 - **Project start**: [PENDING — store build in separate chat]
 
 ## Objective
-Build a simple, mobile-first online store for Hispanos Pharmacy. Customers (primarily older, Spanish-speaking) can browse 4 product categories, search, add to cart, and submit orders via WhatsApp.
+Build a simple, mobile-first online store for Hispanos Pharmacy. Customers (primarily older, Spanish-speaking) can browse 4 product categories, search, add to cart, and place orders that land in a staff dashboard (`/admin`).
 
 ## Context
 - Customer base: older, Spanish-speaking community in Jackson Heights, Queens
 - Default language: Spanish — English available via toggle
 - Connected to the phone AI: Sofia sends delivery callers the store link
-- Orders go to pharmacy WhatsApp: (929) 606-7118
+- Orders are stored in Supabase and reviewed by staff at `/admin` (WhatsApp ordering removed 2026-09-22)
 
 ## Product Categories
 | # | Spanish | English |
@@ -27,8 +27,8 @@ Build a simple, mobile-first online store for Hispanos Pharmacy. Customers (prim
 - Large text, big tap targets — older users
 - Warm colors, not clinical/cold
 - No account creation required
-- Simple checkout: name + phone + address + order summary
-- Order submission → opens WhatsApp with pre-filled message
+- Simple checkout: name + phone (required, validated) + address + optional notes + pay-on-delivery method
+- Order submission → saved to Supabase → confirmation screen with order number
 
 ## Tech Stack
 - [DECIDED IN BUILD CHAT]
@@ -38,7 +38,6 @@ Build a simple, mobile-first online store for Hispanos Pharmacy. Customers (prim
 ## Pharmacy Info
 - **Name**: Hispanos Pharmacy
 - **Address**: 80-11 37th Ave, Jackson Heights, NY 11372
-- **WhatsApp (orders)**: (929) 606-7118
 - **Phone**: (718) 255-6129
 
 ## Out of Scope (Phase 1)

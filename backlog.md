@@ -1,15 +1,17 @@
 # Backlog — Hispanos Pharmacy Store
 
 ## Status
-**Storefront rebuilt** — interface redesigned around an Amazon-style browse/cart/checkout
-flow. Runs and builds clean. Not yet deployed.
+**Storefront + orders dashboard built.** Customers order on the store; staff see and
+manage orders at `/admin`. WhatsApp ordering removed. Runs and builds clean. Not yet deployed.
 
 ## Priority Queue
 
 | # | Task | Status | Blocker |
 |---|------|--------|---------|
 | 1 | Keep Supabase project awake (free tier pauses after ~1 week idle) — upgrade to Pro or add a keep-alive | pending | client decision |
-| 2 | Deploy to Vercel and capture the live URL | pending | task 1 (optional), client approval |
+| 2 | Deploy to Vercel and capture the live URL | pending | client approval |
+| 2b | Create the pharmacy owner's dashboard login | pending | owner's email [NEEDED] |
+| 2c | Notify staff of new orders when the dashboard is closed (SMS/email via n8n) | pending | decide channel |
 | 3 | Connect phone AI: Sofia sends store link to delivery callers | pending | store URL |
 | 4 | End-to-end test from a real phone: browse → cart → WhatsApp | pending | task 2 |
 | 5 | Replace product photos that carry a supplier watermark (e.g. Band-Aid) | pending | — |
@@ -22,6 +24,24 @@ flow. Runs and builds clean. Not yet deployed.
 - [x] Storefront v1 (28 products, 4 categories, WhatsApp checkout)
 - [x] Interface redesign — see below
 - [x] Supabase project restored (2026-09-21); `.env.local` set; order insert verified end-to-end
+- [x] WhatsApp checkout replaced by database orders + `/admin` dashboard (2026-09-22) — see below
+
+## Orders dashboard (2026-09-22)
+- Checkout: required, auto-formatted US phone; delivery notes; cash/card on delivery;
+  confirmation screen with order number. Cart is kept if submission fails.
+- Store places orders only through `place_order()` (validates input, recomputes total).
+- `/admin`: email/password login; stats (today, open, sales today, total); orders
+  grouped by status (Nuevo → Preparando → En camino → Entregado / Cancelado);
+  search; detail panel with call/map buttons; polls every 15 s with a chime and
+  highlight for new orders; card layout on phones.
+- Security: only users in `pharmacy_staff` can read/update orders; public sign-up
+  disabled (previously any signed-up user could read every order).
+- Migration: `supabase/migrations/20260921_orders_dashboard.sql` (applied).
+- Staff login for Juan stored in `~/.secrets/hispanos-dashboard.env`.
+
+### Add a staff member
+1. Supabase → Authentication → Users → Add user (email + password, auto-confirm)
+2. SQL: `insert into pharmacy_staff (user_id) select id from auth.users where email = '<email>';`
 
 ## Interface redesign (this pass)
 
@@ -57,6 +77,5 @@ When the store is live, update `prompts/pharmacy-agent.md` in `hispanos-pharmacy
 - Sofia will say: "You can also browse and order directly from our website at [store URL]."
 
 ## Notes
-- Orders go to WhatsApp `(929) 606-7118` via `NEXT_PUBLIC_WHATSAPP_NUMBER`
-- Supabase logging is best-effort by design: it never blocks the WhatsApp handoff
+- Orders are only recorded in Supabase now — if the project pauses, checkout shows an error and asks the customer to call
 - Catalog lives in `src/lib/products.js` (`placeholderProducts`); photos in `public/products/`

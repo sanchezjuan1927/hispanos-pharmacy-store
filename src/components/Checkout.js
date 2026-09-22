@@ -1,109 +1,192 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useStore } from '../context/StoreContext';
 import { getSupabase } from '../lib/supabase';
 import styles from './Checkout.module.css';
 
-const WHATSAPP_NUMBER = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || '19296067118';
-const TABLE = 'Hisp Pharmacy Order taker';
+const PHARMACY_PHONE = '(718) 255-6129';
+const PHARMACY_TEL = 'tel:+17182556129';
+
+const digitsOf = (value) => value.replace(/\D/g, '');
+
+// US numbers only: 10 digits, or 11 with a leading 1.
+const isValidPhone = (value) => {
+  const d = digitsOf(value);
+  return d.length === 10 || (d.length === 11 && d.startsWith('1'));
+};
+
+// Shape "9295551234" into "(929) 555-1234" as the customer types.
+const formatPhone = (value) => {
+  let d = digitsOf(value);
+  if (d.length === 11 && d.startsWith('1')) d = d.slice(1);
+  d = d.slice(0, 10);
+  if (d.length < 4) return d;
+  if (d.length < 7) return `(${d.slice(0, 3)}) ${d.slice(3)}`;
+  return `(${d.slice(0, 3)}) ${d.slice(3, 6)}-${d.slice(6)}`;
+};
 
 export default function Checkout() {
-  const { t, lang, cart, cartTotal, checkoutOpen, setCheckoutOpen, clearCart } =
+  const { t, lang, cart, cartTotal, checkoutOpen, setCheckoutOpen, setCartOpen, clearCart } =
     useStore();
 
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
   const [address, setAddress] = useState('');
+  const [notes, setNotes] = useState('');
+  const [payment, setPayment] = useState('cash');
+  const [phoneTouched, setPhoneTouched] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState(false);
+  // Snapshot of the placed order, so the confirmation survives clearing the cart
+  const [placed, setPlaced] = useState(null);
 
-  if (!checkoutOpen) return null;
+  const open = checkoutOpen || placed !== null;
 
-  const buildWhatsAppMessage = () => {
-    const header = lang === 'es' ? '🛒 *Nuevo Pedido - Hispanos Pharmacy*' : '🛒 *New Order - Hispanos Pharmacy*';
-    const divider = '─────────────────────';
+  useEffect(() => {
+    if (!open) return undefined;
+    const previous = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = previous;
+    };
+  }, [open]);
 
-    let items = cart
-      .map((item) => {
-        const itemName = lang === 'es' ? item.name_es : item.name_en;
-        return `• ${itemName} x${item.qty}  —  $${(item.price * item.qty).toFixed(2)}`;
-      })
-      .join('\n');
+  if (!open) return null;
 
-    const totalLabel = lang === 'es' ? 'TOTAL' : 'TOTAL';
-    const nameLabel = lang === 'es' ? 'Nombre' : 'Name';
-    const phoneLabel = lang === 'es' ? 'Teléfono' : 'Phone';
-    const addressLabel = lang === 'es' ? 'Dirección' : 'Address';
+  const phoneOk = isValidPhone(phone);
+  const isValid =
+    name.trim().length >= 2 && phoneOk && address.trim().length >= 5 && cart.length > 0;
 
-    const message = `${header}\n${divider}\n\n${items}\n\n${divider}\n💰 *${totalLabel}: $${cartTotal.toFixed(2)}*\n${divider}\n\n👤 *${nameLabel}:* ${name}\n📞 *${phoneLabel}:* ${phone}\n📍 *${addressLabel}:* ${address}`;
+  const close = () => {
+    setCheckoutOpen(false);
+    setPlaced(null);
+  };
 
-    return encodeURIComponent(message);
+  const backToCart = () => {
+    setCheckoutOpen(false);
+    setCartOpen(true);
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    // Save order to Supabase
-    if (submitting) return;
+    if (!isValid || submitting) return;
     setSubmitting(true);
+    setError(false);
 
-    const url = `https://wa.me/${WHATSAPP_NUMBER}?text=${buildWhatsAppMessage()}`;
+    const items = cart.map((item) => ({
+      id: item.id,
+      name: item.name_es,
+      name_en: item.name_en,
+      qty: item.qty,
+      price: item.price,
+    }));
 
-    // Log the order, but never let a slow or unconfigured database hold up the
-    // WhatsApp handoff — that handoff is how the pharmacy actually gets the order.
     try {
       const supabase = getSupabase();
-      if (supabase) {
-        await Promise.race([
-          supabase.from(TABLE).insert({
-            full_name: name.trim(),
-            phone: phone.trim(),
-            address: address.trim(),
-            items: cart.map((item) => ({
-              name: lang === 'es' ? item.name_es : item.name_en,
-              qty: item.qty,
-              price: item.price,
-            })),
-            total: cartTotal,
-            status: 'pending',
-          }),
-          new Promise((resolve) => setTimeout(resolve, 4000)),
-        ]);
-      }
+      if (!supabase) throw new Error('not_configured');
+
+      const { data: orderId, error: rpcError } = await supabase.rpc('place_order', {
+        p_full_name: name.trim(),
+        p_phone: formatPhone(phone),
+        p_address: address.trim(),
+        p_items: items,
+        p_notes: notes.trim(),
+        p_payment_method: payment,
+        p_lang: lang,
+      });
+      if (rpcError) throw rpcError;
+
+      // The order only counts as placed once the database has it; the cart
+      // is kept on any failure so nobody has to rebuild it.
+      setPlaced({
+        id: orderId,
+        name: name.trim(),
+        phone: formatPhone(phone),
+        total: cartTotal,
+        count: cart.reduce((sum, item) => sum + item.qty, 0),
+      });
+      clearCart();
+      setCheckoutOpen(false);
+      setName('');
+      setPhone('');
+      setAddress('');
+      setNotes('');
+      setPayment('cash');
+      setPhoneTouched(false);
     } catch {
-      // Order still reaches the pharmacy over WhatsApp.
+      setError(true);
+    } finally {
+      setSubmitting(false);
     }
-
-    clearCart();
-    setCheckoutOpen(false);
-    setName('');
-    setPhone('');
-    setAddress('');
-
-    // A same-tab navigation, not window.open: mobile Safari blocks popups
-    // opened after an await, which would silently drop the order.
-    window.location.href = url;
   };
 
-  const isValid = name.trim() && phone.trim() && address.trim() && cart.length > 0;
+  // ── Confirmation ─────────────────────────────────────────────
+  if (placed) {
+    return (
+      <div className={styles.overlay}>
+        <div className={styles.modal} role="dialog" aria-modal="true" aria-label={t.orderPlacedTitle}>
+          <div className={styles.confirm}>
+            <div className={styles.checkCircle} aria-hidden="true">
+              <svg viewBox="0 0 24 24" width="40" height="40" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M5 12.5l4.5 4.5L19 7.5" />
+              </svg>
+            </div>
+            <h2 className={styles.confirmTitle}>{t.orderPlacedTitle}</h2>
+            <p className={styles.orderNumber}>
+              {t.orderNumber} <strong>#{placed.id}</strong>
+            </p>
+            <p className={styles.confirmText}>
+              {t.orderPlacedText.replace('{name}', placed.name.split(' ')[0])}
+            </p>
 
+            <div className={styles.confirmSummary}>
+              <div>
+                <span>{t.phone}</span>
+                <strong>{placed.phone}</strong>
+              </div>
+              <div>
+                <span>
+                  {placed.count} {placed.count === 1 ? t.productCountOne : t.productCount}
+                </span>
+                <strong>${placed.total.toFixed(2)}</strong>
+              </div>
+            </div>
+
+            <p className={styles.confirmHelp}>
+              {t.questions} <a href={PHARMACY_TEL}>{PHARMACY_PHONE}</a>
+            </p>
+
+            <button className={styles.submitBtn} onClick={close}>
+              {t.continueShopping}
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // ── Form ─────────────────────────────────────────────────────
   return (
     <div className={styles.overlay} onClick={() => setCheckoutOpen(false)}>
-      <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
+      <div
+        className={styles.modal}
+        role="dialog"
+        aria-modal="true"
+        aria-label={t.checkoutTitle}
+        onClick={(e) => e.stopPropagation()}
+      >
         <div className={styles.header}>
-          <button
-            className={styles.backBtn}
-            onClick={() => setCheckoutOpen(false)}
-          >
+          <button className={styles.backBtn} onClick={backToCart}>
             ← {t.backToCart}
           </button>
           <h2 className={styles.title}>{t.checkoutTitle}</h2>
         </div>
 
-        <form className={styles.form} onSubmit={handleSubmit}>
+        <form className={styles.form} onSubmit={handleSubmit} noValidate>
           <div className={styles.field}>
             <label className={styles.label} htmlFor="checkout-name">
-              👤 {t.name}
+              {t.name} <span className={styles.req}>*</span>
             </label>
             <input
               id="checkout-name"
@@ -119,23 +202,30 @@ export default function Checkout() {
 
           <div className={styles.field}>
             <label className={styles.label} htmlFor="checkout-phone">
-              📞 {t.phone}
+              {t.phone} <span className={styles.req}>*</span>
             </label>
             <input
               id="checkout-phone"
               type="tel"
-              className={styles.input}
+              inputMode="tel"
+              className={`${styles.input} ${phoneTouched && !phoneOk ? styles.inputError : ''}`}
               placeholder={t.phonePlaceholder}
               value={phone}
-              onChange={(e) => setPhone(e.target.value)}
+              onChange={(e) => setPhone(formatPhone(e.target.value))}
+              onBlur={() => setPhoneTouched(true)}
               required
-              autoComplete="tel"
+              autoComplete="tel-national"
+              aria-invalid={phoneTouched && !phoneOk}
+              aria-describedby="phone-help"
             />
+            <p id="phone-help" className={phoneTouched && !phoneOk ? styles.fieldError : styles.fieldHint}>
+              {phoneTouched && !phoneOk ? t.phoneInvalid : t.phoneHint}
+            </p>
           </div>
 
           <div className={styles.field}>
             <label className={styles.label} htmlFor="checkout-address">
-              📍 {t.address}
+              {t.address} <span className={styles.req}>*</span>
             </label>
             <textarea
               id="checkout-address"
@@ -144,10 +234,48 @@ export default function Checkout() {
               value={address}
               onChange={(e) => setAddress(e.target.value)}
               required
-              rows={3}
+              rows={2}
               autoComplete="street-address"
             />
           </div>
+
+          <div className={styles.field}>
+            <label className={styles.label} htmlFor="checkout-notes">
+              {t.notes} <span className={styles.optional}>({t.optional})</span>
+            </label>
+            <textarea
+              id="checkout-notes"
+              className={`${styles.input} ${styles.textarea}`}
+              placeholder={t.notesPlaceholder}
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              rows={2}
+              maxLength={500}
+            />
+          </div>
+
+          <fieldset className={styles.field}>
+            <legend className={styles.label}>{t.paymentMethod}</legend>
+            <div className={styles.paymentOptions}>
+              {['cash', 'card'].map((option) => (
+                <label
+                  key={option}
+                  className={`${styles.paymentOption} ${payment === option ? styles.paymentActive : ''}`}
+                >
+                  <input
+                    type="radio"
+                    name="payment"
+                    value={option}
+                    checked={payment === option}
+                    onChange={() => setPayment(option)}
+                  />
+                  <span aria-hidden="true">{option === 'cash' ? '💵' : '💳'}</span>
+                  {option === 'cash' ? t.payCash : t.payCard}
+                </label>
+              ))}
+            </div>
+            <p className={styles.fieldHint}>{t.paymentHint}</p>
+          </fieldset>
 
           <div className={styles.summary}>
             <h3 className={styles.summaryTitle}>{t.orderSummary}</h3>
@@ -170,17 +298,14 @@ export default function Checkout() {
             </div>
           </div>
 
-          <button
-            type="submit"
-            className={styles.submitBtn}
-            disabled={!isValid}
-          >
-            <span className={styles.whatsappIcon}>
-              <svg viewBox="0 0 24 24" width="24" height="24" fill="white">
-                <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
-              </svg>
-            </span>
-            {t.sendOrder}
+          {error && (
+            <p className={styles.submitError} role="alert">
+              {t.orderError} <a href={PHARMACY_TEL}>{PHARMACY_PHONE}</a>
+            </p>
+          )}
+
+          <button type="submit" className={styles.submitBtn} disabled={!isValid || submitting}>
+            {submitting ? t.placingOrder : `${t.placeOrder} · $${cartTotal.toFixed(2)}`}
           </button>
         </form>
       </div>
