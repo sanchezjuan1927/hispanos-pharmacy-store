@@ -2,14 +2,15 @@
 
 ## Status
 **Storefront + orders dashboard built.** Customers order on the store; staff see and
-manage orders at `/admin`. WhatsApp ordering removed. Runs and builds clean. Not yet deployed.
+manage orders at `/admin`. WhatsApp ordering removed.
+**Live:** https://hispanos-pharmacy-store.vercel.app · dashboard: `/admin` (deployed 2026-09-22).
 
 ## Priority Queue
 
 | # | Task | Status | Blocker |
 |---|------|--------|---------|
 | 1 | Keep Supabase project awake (free tier pauses after ~1 week idle) — upgrade to Pro or add a keep-alive | pending | client decision |
-| 2 | Deploy to Vercel and capture the live URL | pending | client approval |
+| 2 | Deploy to Vercel and capture the live URL | done 2026-09-22 | — |
 | 2b | Create the pharmacy owner's dashboard login | pending | owner's email [NEEDED] |
 | 2c | Notify staff of new orders when the dashboard is closed (SMS/email via n8n) | pending | decide channel |
 | 3 | Connect phone AI: Sofia sends store link to delivery callers | pending | store URL |
@@ -77,5 +78,7 @@ When the store is live, update `prompts/pharmacy-agent.md` in `hispanos-pharmacy
 - Sofia will say: "You can also browse and order directly from our website at [store URL]."
 
 ## Notes
+- Deploy: Vercel project `hispanos-pharmacy-store` is NOT git-connected — pushing does not deploy. Run `vercel deploy --prod` from this folder.
+- Unused Vercel env vars to remove: `SUPABASE_SERVICE_ROLE_KEY`, `NEXT_PUBLIC_WHATSAPP_NUMBER`
 - Orders are only recorded in Supabase now — if the project pauses, checkout shows an error and asks the customer to call
 - Catalog lives in `src/lib/products.js` (`placeholderProducts`); photos in `public/products/`
